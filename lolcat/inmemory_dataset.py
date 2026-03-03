@@ -58,6 +58,7 @@ class InMemoryDataset(Dataset, ABC):
             the GPU has enough memory. This should avoid the CPU to GPU copy operation."""
         for data in self.data_list:
             data.to(device)
+        return self
 
     @property
     def processed_filename(self):
@@ -71,7 +72,7 @@ class InMemoryDataset(Dataset, ABC):
         r"""Loads the processed data from the file."""
         filename = self.processed_filename
         print('filename', filename)
-        processed = torch.load(filename)
+        processed = torch.load(filename, weights_only=False)
         return processed
 
     def map(self, transform):
@@ -84,7 +85,7 @@ class InMemoryDataset(Dataset, ABC):
 
     def save(self, data_dict):
         # make directory if needed
-        os.path.makedirs(os.path.dirname(self.processed_filename), exist_ok=True)
+        os.makedirs(os.path.dirname(self.processed_filename), exist_ok=True)
         # save data to file
         torch.save(data_dict, self.processed_filename)
 

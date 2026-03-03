@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "lolcat"
+dynamic = ["version"]
+dependencies = [
+    "absl-py == 0.12.0",
+    "scipy",
+    "scikit-learn",
+    "tensorboard == 2.6.0",
+    "torch",
+    "torch-geometric",
+    "torch-scatter",
+]
+
+[tool.setuptools]
+packages = ["lolcat"]

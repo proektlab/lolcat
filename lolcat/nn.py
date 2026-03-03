@@ -1,3 +1,5 @@
+from collections import OrderedDict
+
 import torch
 import torch.nn as nn
 
@@ -35,26 +37,23 @@ class MLP(nn.Module):
         super().__init__()
 
         # build the layers
-        layers = []
-        for in_dim, out_dim in zip(hidden_layers[:-1], hidden_layers[1:]):
+        layers = OrderedDict()
+        n_layers = len(hidden_layers)
+        for k_layer, in_dim, out_dim in zip(range(1, n_layers), hidden_layers[:-1], hidden_layers[1:]):
             if in_dim == -1:
-                layers.append(nn.LazyLinear(out_dim, bias=bias))
+                layers[f'linear{k_layer}'] = nn.LazyLinear(out_dim, bias=bias)
             else:
-                layers.append(nn.Linear(in_dim, out_dim, bias=bias))
-            if batchnorm:
-                layers.append(nn.BatchNorm1d(num_features=out_dim))
-            if activation is not None:
-                layers.append(activation)
-            if dropout > 0.:
-                layers.append(nn.Dropout(dropout))
+                layers[f'linear{k_layer}'] = nn.Linear(in_dim, out_dim, bias=bias)
 
-        # remove activation and/or batchnorm layers from the last block
-        if drop_last_nonlin:
-            remove_layers = -(int(activation is not None) + int(batchnorm) + int(dropout>0.))
-            if remove_layers:
-                layers = layers[:remove_layers]
+            if not drop_last_nonlin or k_layer < n_layers - 1:
+                if batchnorm:
+                    layers[f'batchnorm{k_layer}'] = nn.BatchNorm1d(num_features=out_dim)
+                if activation is not None:
+                    layers[f'activation{k_layer}'] = activation
+                if dropout > 0.:
+                    layers[f'dropout{k_layer}'] = nn.Dropout(dropout)
 
-        self.layers = nn.Sequential(*layers)
+        self.layers = nn.Sequential(layers)
 
     def forward(self, x):
         x = self.layers(x)

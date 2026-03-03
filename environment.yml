@@ -1,0 +1,9 @@
+dependencies:
+- python
+- absl-py ==0.12.0
+- scipy
+- scikit-learn
+- tensorboard ==2.6.0
+- pytorch
+- pytorch_geometric
+- pytorch_scatter

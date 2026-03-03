@@ -23,3 +23,20 @@ def cm2str(cm, labels, hide_zeroes=False, hide_diagonal=False, hide_threshold=No
             out += cell + " "
         out += "\n"
     return out
+
+
+def compute_isi_distribtuion(data: np.ndarray):
+    """
+    Computes the ISI distribution for each neuron in the dataset.
+    data: neurons x trials x time array of events
+    """
+    isi_matrix = np.zeros_like(data)
+    out = np.nonzero(data)
+    trial_index = out[0] * data.shape[1] + out[1]
+    time_index = trial_index * 2 * data.shape[2] + out[2]  # add a gap bigger than the duration of the trial
+
+    isi = np.concatenate([np.zeros(1, dtype=np.int64), time_index[1:] - time_index[:-1]])
+    isi[isi >= data.shape[2]] = 0
+    np.add.at(isi_matrix, (out[0], out[1], isi), np.ones_like(isi))
+    isi_matrix = isi_matrix[..., 1:]
+    return isi_matrix
